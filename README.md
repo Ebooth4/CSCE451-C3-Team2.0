@@ -10,7 +10,7 @@ Team members:
 - Michael Mirhosseini
 
 ## Introduction
-  
+For challenge 3 we created a scirpt with both Ghidrathon and Jep in order to break down the reversed code into a more readable graph. This allows us to follow function calls and see how often certain functions and variables are used. It also shows recursion and makes it easy to eliminate dummy information from the program.
 
 ## Purpose of Our Script
    The purpose of C3 is to iterate and build upon the groundwork set by Ghidra in our own innovative way. Throughout the journey to reverse engineer various projects within this class, we were met with roadblocks purposely made to set us astray, with false functions, variables, and even simply confusing variables or statements. Furthermore, in a challenge like the previously assigned CrackMe, various objects including functions, variables, and structs were falsified and obfuscated with the sole purpose of being misleading.Because reverse engineering is a complex process and the slightest errors can lead to an incorrect path, we aim to alleviate this problem as well as make the reversing process easier to process. 
