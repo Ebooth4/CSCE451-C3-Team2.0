@@ -32,14 +32,14 @@ There are multiple options for python3 interpreters, but the one that we used is
 Once you have Ghidrathon installed, restart Ghidra and open the Script Manager window. Create a new script and make sure to select "Python 3" as the script type. Once the new script is open, simply copy and paste the code from our script into the text editor before saving and running the script.
 
 
-###With Ghidrathon:
+## With Ghidrathon:
 - Get the NetworkX python library using the command ‘pip install networkx’.
 - Install Ghidrathon using the instructions at https://github.com/mandiant/Ghidrathon
 - Unzip the file c3-t2-0.zip and analyze one of the .exe files that we provided using Ghidra (or create your own for testing).
 - Open the script manager, create a new script (selecting the Python 3 interpreter), and paste in the code from ‘GraphFunctionAndVariableCalls.py’.
 - Run the script. Click the save button on each graph to save an image for future reference. Note: there may be a bug with Ghidrathon that causes Ghidra to crash if you try to run the script more than once. This can be solved by resolving Jep dependencies with numpy, but the crashing has nothing to do with our script.
 
-###Without Ghidrathon (note: the script is not intended to be run this way, so there is some inconvenience to the user in copying and pasting here):
+## Without Ghidrathon (note: the script is not intended to be run this way, so there is some inconvenience to the user in copying and pasting here):
 - Get the NetworkX python library using the command ‘pip install networkx’.
 - Unzip the file c3-t2-0.zip and analyze one of the .exe files that we provided using Ghidra (or create your own for testing).
 - Open the script manager, create a new script (selecting the Python 3 interpreter), and paste in the code from ‘CreateDependencies.py’.
