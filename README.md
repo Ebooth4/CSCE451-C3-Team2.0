@@ -10,8 +10,11 @@ Team members:
 - Michael Mirhosseini
 
 ## Introduction
+  
 
 ## Purpose of Our Script
+    The purpose of C3 is to iterate and build upon the groundwork set by Ghidra in our own innovative way. Throughout the journey to reverse engineer various projects within this class, we were met with roadblocks purposely made to set us astray, with false functions, variables, and even simply confusing variables or statements. Furthermore, in a challenge like the previously assigned CrackMe, various objects including functions, variables, and structs were falsified and obfuscated with the sole purpose of being misleading.Because reverse engineering is a complex process and the slightest errors can lead to an incorrect path, we aim to alleviate this problem as well as make the reversing process easier to process. 
+    As we have learned there is no way to completely and comprehensively solve this problem, as otherwise reverse engineering would be a trivial matter all by itself. However, it is possible to make the reversed code easier to go through and absorb, this is what we would like to accomplish. We will accomplish this by creating a script for Ghidra which makes dummy variables and functions easier to identify and eliminate. Furthermore, as humans are visual learners, we would like to make a graphical representation of the functions and variables and see what they call, where they lead to, and how often they are used. We believe that by overcoming these two challenges, it will greatly aid us in all forms of reverse engineering in the future. 
 
 ## Installation Instructions:
 
