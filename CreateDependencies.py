@@ -19,7 +19,7 @@ filter_names = True
 function_names = []
 
 # functions to skip over
-skips = ['endl']
+skips = ['cin', 'cout', 'endl']
 
 def filterName(name):
     if not filter_names:
