@@ -1,30 +1,60 @@
 # Team 2.0: Joshua Wood, Michael Mirhosseini, Xiaohu Huang, Evan Graham
 
-# ghidra imports
-import ghidra
-from ghidra.util.task import ConsoleTaskMonitor
-from ghidra.app.decompiler import DecompileOptions, DecompInterface
-from ghidra.program.model.symbol import RefType, ReferenceManager, Reference
-from ghidra.program.model.address import Address, AddressSpace
-from ghidra.program.model.listing import VariableFilter
-from ghidra.app.decompiler.component import DecompilerUtils
 # graphing imports
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
 
+# ghidra imports
+import ghidra
+from ghidra.util.task import ConsoleTaskMonitor
+from ghidra.app.decompiler import DecompileOptions, DecompInterface
+from ghidra.app.cmd.label import DemanglerCmd
+from ghidra.program.model.symbol import RefType, ReferenceManager, Reference
+from ghidra.program.model.address import Address, AddressSpace
+from ghidra.program.model.listing import VariableFilter
+from ghidra.app.decompiler.component import DecompilerUtils
+
 # Set this to True to remove all functions with no variables (only show source code functions)
 remove_empty_functions = False
-filter_names = False
+# Set this to True to filter function names by a specific regex
+filter_names = True
 
 # Define the function names that you want to check
 function_names = []
 
+# functions to skip over
+skips = ['endl']
+
 def filterName(name):
-    if filter_names:
-        name = name[:-1] # remove the v added to the end
-        filter_strings = ['_Z1', '_Z2', '_Z3', '_Z4', '_Z5', '_Z6', '_Z7', '_Z8', '_Z9']
-        for filter in filter_strings:
+    if not filter_names:
+        return name
+    skip_prefixes = ["s_", "u_", "AddrTable"]
+    for skip_prefix in skip_prefixes:
+        if name.startswith(skip_prefix):
+            return name
+    if "::case_0x" in name or "::switchTable" in name:
+        if name.index("::case_0x") > 0:
+            pos = name.index("::case_0x")
+            name = name[:pos]
+        elif name.index("::switchTable") > 0:
+            pos = name.index("::switchTable")
+            name = name[:pos]
+
+    thisFunction = getFunction(name)
+    if thisFunction is not None:
+        thisFunctionAddr = thisFunction.getEntryPoint()
+        cmd = DemanglerCmd(thisFunctionAddr, name)
+        cmd.applyTo(currentProgram, monitor) # demangle function name
+        name = getFunctionAt(thisFunctionAddr).getName() # get new function name at address
+
+    suffixes = ['v']
+    for suf in suffixes:
+        if name.endswith(suf):
+            name = name[:-1] # remove the v added to the end
+    filter_strings = ['_Z1', '_Z2', '_Z3', '_Z4', '_Z5', '_Z6', '_Z7', '_Z8', '_Z9', 'ii']
+    for filter in filter_strings:
+        if filter in name:
             name = name.replace(filter, '') # remove all strings to filter out
     return name
 
@@ -41,6 +71,7 @@ def getVars(fun):
 
 def createFunctionCallData(root):
     def isFunctionEmpty(fun):
+        if fun is None: return True
         return len(fun.getLocalVariables()) == 0 and remove_empty_functions
     dependencies = [] # a list of tuples showing what calls each function makes
     futureNodes = [root] # a list of functions to look at
@@ -51,6 +82,8 @@ def createFunctionCallData(root):
         if isFunctionEmpty(thisNode):
             continue # don't look at this function if it is empty
         thisNodeName = str(thisNode.getName())
+        if thisNodeName in skips:
+            continue # don't look at this function if it is included in the list of functions to skip
         if thisNodeName in function_names:
             continue
         else:
@@ -79,7 +112,10 @@ def createVariableUseData(function_name):
 
     # Loop through each local variable
     for local_var in local_vars:
-        instances = local_var.getHighVariable().getInstances()
+        highVar = local_var.getHighVariable()
+        if highVar is None:
+            continue
+        instances = highVar.getInstances()
         # create a list of variables in the lines where this variable is mentioned
         instance_vars = []
         for instance in instances:
@@ -104,6 +140,11 @@ def getDependencies():
     for function_name in function_names:
         all_dependencies.append(createVariableUseData(function_name))
     return all_dependencies
+
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
+
 
 def make_graph(input_list_and_title, side_length = 15, top_length = 15, save_file = False, show_graph = True) :
 
@@ -173,9 +214,9 @@ def make_graph(input_list_and_title, side_length = 15, top_length = 15, save_fil
     G.add_edges_from(input_list) # Function to create edges from the inputted list (from above)
 
     pos = nx.spring_layout(G, seed=seed) # Creating the position vaiable to ensure every node, edge, and label lines up
-    node_sizes = [len(i) * 200 for i in G.nodes()] # Scaling node based on label size (not perfect)
+    node_sizes = 6000
 
-    nx.draw_networkx_labels(G, pos, font_color="white", font_size="10") # Create labels for the nodes
+    nx.draw_networkx_labels(G, pos, font_color="white", font_size="15") # Create labels for the nodes
     nx.draw_networkx_nodes(G, pos, node_size=node_sizes) # Place the nodes with those labels
     nx.draw_networkx_edges(G,
                         pos,
@@ -197,28 +238,6 @@ def make_graph(input_list_and_title, side_length = 15, top_length = 15, save_fil
         plt.show() # Create pop up to diplay the graph
 
 dependencies = getDependencies()
-print(dependencies)
 for this_graph in dependencies:
     if len(this_graph[1]) > 0:
-        make_graph(this_graph, save_file = True)
-
-# def getConditionalAsNode():
-
-#     # get the current program
-#     program = state.getCurrentProgram()
-
-#     # get the current function
-#     function = getFunctionContaining(currentAddress)
-
-#     # get the listing for the current function
-#     listing = program.getListing()
-#     instructions = listing.getInstructions(function.getEntryPoint(), True)
-
-#     # iterate through the instructions and look for if-else statements
-#     for instruction in instructions:
-#         if instruction.getFlowType().isConditional():
-#             # get the conditional expression
-#             conditional = instruction.getBranchSource(0).toString()
-#             # just for testing
-#             print("Conditional expression: " + conditional)
-# getConditionalAsNode()
+        make_graph(this_graph)
