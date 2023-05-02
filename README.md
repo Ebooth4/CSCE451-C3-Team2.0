@@ -54,7 +54,7 @@ Once you have Ghidrathon installed, restart Ghidra and open the Script Manager w
 
 Here is an extensive list of improvements we made in Challenge 4:
 
-- Scope Expansion: the initial code that we wrote only worked for a small scope of executables.
+- Scope Expansion. The initial code that we wrote only worked for a small scope of binaries. This was due to various edge cases that were not accounted for in the first implementation of the code. In C4, we took a lot more of these edge cases into account and wrote checks in the code to allow for a much more broad scope of binaries that can be reversed.
 - Readability improvements: improved graphing function to make the graphs more readable for the users. This included updates to the node size, text wrap, and seed for the graph to reduce overlap.
 - Added functionality to recognize and display branching conditional statements as an additional graph.
 - Removes some built-in C++ functions: some C++ functions such as cout and endl were called and not defined in the executable. Our code made a list of these functions so that the function search algorithm could recognize and skip over these functions.
