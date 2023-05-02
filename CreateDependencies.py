@@ -5,6 +5,7 @@ import ghidra
 from ghidra.util.task import ConsoleTaskMonitor
 from ghidra.app.decompiler import DecompileOptions, DecompInterface
 from ghidra.app.cmd.label import DemanglerCmd
+from ghidra.program.model.pcode import HighFunction
 from ghidra.program.model.symbol import RefType, ReferenceManager, Reference
 from ghidra.program.model.address import Address, AddressSpace
 from ghidra.program.model.listing import VariableFilter
@@ -130,10 +131,61 @@ def createVariableUseData(function_name):
                 function_dependencies.append((this_var, that_var))
     return (filterName(function_name), function_dependencies)
 
+def extract_conditionals(function_name):
+    function = getFunction(function_name)
+
+    # Create a DecompInterface and set the options
+    decompInterface = DecompInterface()
+    decompOptions = DecompileOptions()
+    decompInterface.openProgram(currentProgram)
+    decompInterface.setOptions(decompOptions)
+
+    # Decompile the function and get the CCodeMarkup
+    decompiledFunction = decompInterface.decompileFunction(function, 60, monitor)
+    markup = decompiledFunction.getCCodeMarkup()
+    code_str = str(markup)
+
+    # Split code into separate statements
+    import re
+    code_str = re.sub(r';(?!\s*})', ';\n', code_str)
+    code_str = re.sub(r'{', '{\n', code_str)
+    code_str = re.sub(r'}', '}\n', code_str)
+    code_lines = code_str.split('\n')
+
+    # Extract conditionals inside if statements
+    this_cond = []
+    output = []
+    for line in code_lines:
+        if 'if' in line:
+            start = line.find('(') + 1
+            end = line.rfind(') {')
+            condition = line[start:end].strip()
+            this_cond.append(condition)
+            if len(this_cond) > 1:
+              output.append((this_cond[-2], this_cond[-1]))
+
+        elif '}' in line:
+            if len(this_cond) > 0:
+                this_cond.pop(len(this_cond)-1)
+
+        if line is not None:
+            match_obj = re.search(r'\w+\([^)]*\)', line)
+            if match_obj is not None:
+                if len(this_cond) > 0:
+                    output.append((this_cond[-1], match_obj.group()))
+                else:
+                    output.append((match_obj.group(), match_obj.group()))
+
+    return output
+
 def getDependencies():
     all_dependencies = [createFunctionCallData("main")]
     for function_name in function_names:
-        all_dependencies.append(createVariableUseData(function_name))
+        f_vars = createVariableUseData(function_name)
+        f_conds = extract_conditionals(function_name)
+        function_dependencies = (function_name, f_vars[1] + f_conds)
+        all_dependencies.append(function_dependencies)
+
     return all_dependencies
 
 dependencies = getDependencies()
