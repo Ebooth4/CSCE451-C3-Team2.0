@@ -44,7 +44,7 @@ def filterName(name):
         cmd.applyTo(currentProgram, monitor) # demangle function name
         name = getFunctionAt(thisFunctionAddr).getName() # get new function name at address
 
-    suffixes = ['v']
+    suffixes = ['()', 'v']
     for suf in suffixes:
         if name.endswith(suf):
             name = name[:-1] # remove the v added to the end
@@ -171,10 +171,11 @@ def extract_conditionals(function_name):
         if line is not None:
             match_obj = re.search(r'\w+\([^)]*\)', line)
             if match_obj is not None:
+                func_call = filterName(match_obj.group())
                 if len(this_cond) > 0:
-                    output.append((this_cond[-1], match_obj.group()))
+                    output.append((this_cond[-1], func_call))
                 else:
-                    output.append((match_obj.group(), match_obj.group()))
+                    output.append((func_call, func_call))
 
     return output
 

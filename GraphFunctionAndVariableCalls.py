@@ -49,14 +49,14 @@ def filterName(name):
         cmd.applyTo(currentProgram, monitor) # demangle function name
         name = getFunctionAt(thisFunctionAddr).getName() # get new function name at address
 
-    suffixes = ['v']
+    suffixes = ['()', 'v']
     for suf in suffixes:
         if name.endswith(suf):
-            name = name[:-1] # remove the v added to the end
+            name = name.replace(suf, '') # remove the v added to the end
     filter_strings = ['_Z1', '_Z2', '_Z3', '_Z4', '_Z5', '_Z6', '_Z7', '_Z8', '_Z9', 'ii']
-    for filter in filter_strings:
-        if filter in name:
-            name = name.replace(filter, '') # remove all strings to filter out
+    for pref in filter_strings:
+        if name.startswith(pref):
+            name = name.replace(pref, '') # remove all strings to filter out
     return name
 
 def getVars(fun):
@@ -176,10 +176,11 @@ def extract_conditionals(function_name):
         if line is not None:
             match_obj = re.search(r'\w+\([^)]*\)', line)
             if match_obj is not None:
+                func_call = filterName(match_obj.group())
                 if len(this_cond) > 0:
-                    output.append((this_cond[-1], match_obj.group()))
+                    output.append((this_cond[-1], func_call))
                 else:
-                    output.append((match_obj.group(), match_obj.group()))
+                    output.append((func_call, func_call))
 
     return output
 
